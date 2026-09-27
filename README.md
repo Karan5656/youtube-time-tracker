@@ -5,6 +5,11 @@ A Chrome extension (Manifest V3) that tracks how much time you spend on YouTube.
 The toolbar badge shows today's time, and the popup shows today, your all-time
 total, and a bar chart of the last 7 days.
 
+Every time today's YouTube time passes another full hour (1h, 2h, 3h, ...), a
+desktop notification pops up. It stays on screen until you dismiss it. If you
+don't see it, check that notifications for Chrome are allowed in your
+operating system's settings.
+
 ## Install (unpacked)
 
 1. Download or clone this repository.

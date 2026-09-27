@@ -24,9 +24,25 @@ function dateKey(d = new Date()) {
 async function addTime(seconds) {
   const key = dateKey();
   const { days = {} } = await chrome.storage.local.get("days");
-  days[key] = (days[key] || 0) + seconds;
+  const before = days[key] || 0;
+  days[key] = before + seconds;
   await chrome.storage.local.set({ days });
   updateBadge(days[key]);
+
+  const hours = Math.floor(days[key] / 3600);
+  if (hours > Math.floor(before / 3600)) notifyHour(hours);
+}
+
+// Shown each time today's YouTube time crosses another full hour.
+function notifyHour(hours) {
+  chrome.notifications.create(`hour-${dateKey()}-${hours}`, {
+    type: "basic",
+    iconUrl: "icons/icon128.png",
+    title: "Time for a break?",
+    message: `You've spent ${hours} hour${hours === 1 ? "" : "s"} on YouTube today.`,
+    priority: 2,
+    requireInteraction: true,
+  });
 }
 
 function updateBadge(todaySeconds) {
