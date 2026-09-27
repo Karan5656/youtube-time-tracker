@@ -1,24 +1,10 @@
-function dateKey(d) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function formatDuration(seconds) {
-  const s = Math.floor(seconds);
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  if (h > 0) return `${h}h ${m}m`;
-  if (m > 0) return `${m}m`;
-  return `${s % 60}s`;
-}
-
 async function render() {
   const { days = {} } = await chrome.storage.local.get("days");
   const today = new Date();
 
   document.getElementById("today").textContent = formatDuration(days[dateKey(today)] || 0);
+  renderLimit(days[dateKey(today)] || 0, await getSettings());
+
   const total = Object.values(days).reduce((a, b) => a + b, 0);
   document.getElementById("total").textContent = formatDuration(total);
 
@@ -55,14 +41,52 @@ async function render() {
   );
 }
 
+function renderLimit(todaySeconds, { limitMinutes, blockWhenOver }) {
+  const select = document.getElementById("limit");
+  // Keep a custom value (set outside the popup) selectable.
+  if (![...select.options].some((o) => Number(o.value) === limitMinutes)) {
+    select.add(new Option(formatDuration(limitMinutes * 60), limitMinutes));
+  }
+  select.value = String(limitMinutes);
+
+  const block = document.getElementById("block");
+  block.checked = blockWhenOver;
+  block.disabled = limitMinutes === 0;
+  block.parentElement.classList.toggle("disabled", limitMinutes === 0);
+
+  const progress = document.getElementById("limit-progress");
+  progress.hidden = limitMinutes === 0;
+  if (limitMinutes === 0) return;
+  const limit = limitMinutes * 60;
+  const over = todaySeconds >= limit;
+  progress.classList.toggle("over", over);
+  document.getElementById("limit-fill").style.width = `${Math.min(todaySeconds / limit, 1) * 100}%`;
+  document.getElementById("limit-text").textContent = over
+    ? "Limit reached"
+    : `${formatDuration(limit - todaySeconds)} left`;
+}
+
+async function saveSettings(patch) {
+  const settings = await getSettings();
+  await chrome.storage.local.set({ settings: { ...settings, ...patch } });
+}
+
+document.getElementById("limit").addEventListener("change", (e) => {
+  saveSettings({ limitMinutes: Number(e.target.value) });
+});
+
+document.getElementById("block").addEventListener("change", (e) => {
+  saveSettings({ blockWhenOver: e.target.checked });
+});
+
 document.getElementById("reset").addEventListener("click", async () => {
   if (!confirm("Erase all tracked YouTube time?")) return;
-  await chrome.storage.local.set({ days: {} });
+  await chrome.storage.local.set({ days: {} }); // keeps the limit settings
   render();
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "local" && "days" in changes) render();
+  if (area === "local" && ("days" in changes || "settings" in changes)) render();
 });
 
 render();

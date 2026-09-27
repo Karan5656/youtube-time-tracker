@@ -22,6 +22,33 @@
   </section>
 
   <section>
+    <h2>Daily limit</h2>
+    <div class="limit-progress" id="limit-progress">
+      <div class="bar"><div id="limit-fill"></div></div>
+      <span id="limit-text"></span>
+    </div>
+    <div class="limit-form">
+      <label for="limit">Limit per day</label>
+      <select id="limit">
+        <option value="0">Off</option>
+        <option value="15">15 min</option>
+        <option value="30">30 min</option>
+        <option value="45">45 min</option>
+        <option value="60">1 hour</option>
+        <option value="90">1.5 hours</option>
+        <option value="120">2 hours</option>
+        <option value="180">3 hours</option>
+        <option value="240">4 hours</option>
+        <option value="300">5 hours</option>
+      </select>
+    </div>
+    <label class="check">
+      <input type="checkbox" id="block">
+      Block YouTube when I reach it
+    </label>
+  </section>
+
+  <section>
     <h2>Last 7 days</h2>
     <div id="week" class="week"></div>
   </section>
@@ -31,6 +58,7 @@
     <button id="reset" type="button">Reset</button>
   </footer>
 
+  <script src="common.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

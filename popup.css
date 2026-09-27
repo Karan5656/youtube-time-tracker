@@ -44,3 +44,12 @@ button {
   border: none; border-radius: 6px; padding: 5px 10px; cursor: pointer;
 }
 button:hover { background: var(--bar-bg); }
+.limit-progress { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 10px; }
+.limit-progress[hidden] { display: none; }
+.limit-progress.over #limit-text { color: var(--accent); font-weight: 600; }
+.limit-progress:not(.over) .bar > div { background: var(--muted); }
+.limit-form { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+select { font: inherit; color: var(--fg); background: var(--card); border: none; border-radius: 6px; padding: 4px 6px; }
+.check { display: flex; align-items: center; gap: 6px; }
+.check input { accent-color: var(--accent); margin: 0; }
+.check.disabled { color: var(--muted); }
