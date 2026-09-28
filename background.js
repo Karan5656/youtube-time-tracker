@@ -1,8 +1,6 @@
 // Adds up YouTube time from content-script heartbeats and stores it per day.
 //
-// Storage layout (chrome.storage.local):
-//   days: { "YYYY-MM-DD": seconds, ... }
-//   settings: { limitMinutes, blockWhenOver }  (see common.js for defaults)
+// Storage layout and cross-device sync: see common.js.
 //
 // A heartbeat arrives every ~5s from each visible YouTube tab. Rather than
 // adding a fixed 5s per heartbeat (which would double count two visible
@@ -20,19 +18,23 @@ chrome.idle.setDetectionInterval(IDLE_THRESHOLD_S);
 async function addTime(seconds) {
   const key = dateKey();
   const { days = {} } = await chrome.storage.local.get("days");
-  const before = days[key] || 0;
-  days[key] = before + seconds;
+  days[key] = (days[key] || 0) + seconds;
   await chrome.storage.local.set({ days });
+  await chrome.storage.session.set({ syncDirty: true });
 
+  // Limits and reminders go by today's time across all devices.
+  const usage = await getUsage();
+  const after = usage.days[key] || 0;
+  const before = after - seconds;
   const { limitMinutes } = await getSettings();
   const limit = limitMinutes * 60;
-  updateBadge(days[key], limit);
+  updateBadge(after, limit);
 
-  if (limit > 0 && before < limit && days[key] >= limit) {
+  if (limit > 0 && before < limit && after >= limit) {
     notifyLimit(limitMinutes);
     return; // don't stack an hourly reminder on top of this one
   }
-  const hours = Math.floor(days[key] / 3600);
+  const hours = Math.floor(after / 3600);
   if (hours > Math.floor(before / 3600)) notifyHour(hours);
 }
 
@@ -95,14 +97,90 @@ chrome.runtime.onMessage.addListener((msg) => {
 });
 
 async function refreshBadge() {
-  const { days = {} } = await chrome.storage.local.get("days");
+  const { days } = await getUsage();
   const { limitMinutes } = await getSettings();
   updateBadge(days[dateKey()] || 0, limitMinutes * 60);
 }
 
-chrome.runtime.onStartup.addListener(refreshBadge);
-chrome.runtime.onInstalled.addListener(refreshBadge);
+// --- Cross-device sync -----------------------------------------------------
+
+let deviceIdPromise;
+function getDeviceId() {
+  deviceIdPromise ??= (async () => {
+    let { deviceId } = await chrome.storage.local.get("deviceId");
+    if (!deviceId) {
+      deviceId = crypto.randomUUID();
+      await chrome.storage.local.set({ deviceId });
+    }
+    return deviceId;
+  })();
+  return deviceIdPromise;
+}
+
+// Publishes this device's time to chrome.storage.sync. Chrome allows about
+// 1800 sync writes an hour, so this runs at most once a minute (on the
+// alarm below) rather than on every heartbeat.
+async function pushToSync() {
+  const deviceId = await getDeviceId();
+  const { days = {} } = await chrome.storage.local.get("days");
+  const cutoff = dateKey(new Date(Date.now() - SYNC_DAYS * 86400 * 1000));
+  const d = {};
+  let older = 0;
+  for (const [day, seconds] of Object.entries(days)) {
+    if (day > cutoff) d[day] = Math.round(seconds);
+    else older += seconds;
+  }
+  await chrome.storage.sync.set({
+    [DEVICE_PREFIX + deviceId]: {
+      d,
+      older: Math.round(older),
+      since: Object.keys(days).sort()[0] || null,
+      pushedAt: Date.now(),
+    },
+  });
+  await chrome.storage.session.set({ syncDirty: false });
+}
+
+async function pushIfDirty() {
+  const { syncDirty } = await chrome.storage.session.get("syncDirty");
+  if (syncDirty) await pushToSync();
+}
+
+// Reset pressed on another device: erase this device's time too.
+async function applyRemoteReset() {
+  const { resetAt = 0 } = await chrome.storage.sync.get("resetAt");
+  const { resetSeen = 0 } = await chrome.storage.local.get("resetSeen");
+  if (resetAt > resetSeen) {
+    await chrome.storage.local.set({ days: {}, resetSeen: resetAt });
+  }
+}
+
+// Only create the alarm if it's missing: re-creating it on every
+// service-worker start would keep pushing it back and it might never fire.
+chrome.alarms.get("sync").then((alarm) => {
+  if (!alarm) chrome.alarms.create("sync", { periodInMinutes: 1 });
+});
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === "sync") queue = queue.then(pushIfDirty).catch(console.error);
+});
+
+async function onStart() {
+  await applyRemoteReset();
+  await pushToSync();
+  await refreshBadge();
+}
+
+chrome.runtime.onStartup.addListener(() => {
+  queue = queue.then(onStart).catch(console.error);
+});
+chrome.runtime.onInstalled.addListener(() => {
+  queue = queue.then(onStart).catch(console.error);
+});
 chrome.storage.onChanged.addListener((changes, area) => {
-  // Keep the badge right after a reset or a limit change from the popup.
-  if (area === "local" && ("days" in changes || "settings" in changes)) refreshBadge();
+  if (area === "sync" && "resetAt" in changes) {
+    queue = queue.then(applyRemoteReset).catch(console.error);
+  }
+  // Keep the badge right after a reset, a limit change, or new time synced
+  // from another device.
+  if (area === "sync" || (area === "local" && "days" in changes)) refreshBadge();
 });

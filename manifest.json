@@ -1,21 +1,42 @@
 {
   "manifest_version": 3,
   "name": "YouTube Time Tracker",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Tracks how much time you spend on YouTube, per day and in total.",
-  "permissions": ["storage", "idle", "notifications"],
-  "background": { "service_worker": "background.js" },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyYpz6YuHslW6LcWVwfMsVawj/V4cLqoEhQdUjRhupXuCMIIM0Q3anO6RVG9B2tIrERIgqcFUhm3xcefYOxNmBI5yRxfggJqqhf1gKvsoSVmzGaXOzCdvST5iY/9OOX1Ao/xwvBcUHog8vRK2gF8hPzDjieaOu4TJeCjcy1IHviUbGy91ZiPqiUMohZPd+utq5NQoToJ66mOvqjQWWzx2BiZaGuaIrxqaS6hNVMif19AVfsxANnQCcf339/xAObn3mKjQYtB4tOjGus2wKunb2UwQNUqQGY2wmF+gweD6cIB8HguU7sJJbUApdmytOefCo2sSkawuEJptaYcoWGh2BQIDAQAB",
+  "permissions": [
+    "storage",
+    "idle",
+    "notifications",
+    "alarms"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
-      "matches": ["*://*.youtube.com/*"],
-      "js": ["common.js", "content.js"],
+      "matches": [
+        "*://*.youtube.com/*"
+      ],
+      "js": [
+        "common.js",
+        "content.js"
+      ],
       "run_at": "document_idle"
     }
   ],
   "action": {
     "default_popup": "popup.html",
     "default_title": "YouTube Time Tracker",
-    "default_icon": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png" }
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png"
+    }
   },
-  "icons": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
 }

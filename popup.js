@@ -1,15 +1,14 @@
 async function render() {
-  const { days = {} } = await chrome.storage.local.get("days");
+  const { days, total, since, devices } = await getUsage();
   const today = new Date();
 
   document.getElementById("today").textContent = formatDuration(days[dateKey(today)] || 0);
   renderLimit(days[dateKey(today)] || 0, await getSettings());
 
-  const total = Object.values(days).reduce((a, b) => a + b, 0);
   document.getElementById("total").textContent = formatDuration(total);
 
-  const recorded = Object.keys(days).sort();
-  document.getElementById("since").textContent = recorded.length ? `Tracking since ${recorded[0]}` : "No time tracked yet";
+  const deviceNote = devices > 1 ? ` on ${devices} devices` : "";
+  document.getElementById("since").textContent = since ? `Tracking since ${since}${deviceNote}` : "No time tracked yet";
 
   const week = [];
   for (let i = 6; i >= 0; i--) {
@@ -66,11 +65,6 @@ function renderLimit(todaySeconds, { limitMinutes, blockWhenOver }) {
     : `${formatDuration(limit - todaySeconds)} left`;
 }
 
-async function saveSettings(patch) {
-  const settings = await getSettings();
-  await chrome.storage.local.set({ settings: { ...settings, ...patch } });
-}
-
 document.getElementById("limit").addEventListener("change", (e) => {
   saveSettings({ limitMinutes: Number(e.target.value) });
 });
@@ -80,13 +74,13 @@ document.getElementById("block").addEventListener("change", (e) => {
 });
 
 document.getElementById("reset").addEventListener("click", async () => {
-  if (!confirm("Erase all tracked YouTube time?")) return;
-  await chrome.storage.local.set({ days: {} }); // keeps the limit settings
+  if (!confirm("Erase all tracked YouTube time on all your devices?")) return;
+  await resetEverywhere(); // keeps the limit settings
   render();
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "local" && ("days" in changes || "settings" in changes)) render();
+  if (area === "sync" || (area === "local" && "days" in changes)) render();
 });
 
 render();

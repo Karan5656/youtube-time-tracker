@@ -13,7 +13,7 @@ function isVideoPlaying() {
 async function isBlocked() {
   const { limitMinutes, blockWhenOver } = await getSettings();
   if (!blockWhenOver || limitMinutes <= 0) return false;
-  const { days = {} } = await chrome.storage.local.get("days");
+  const { days } = await getUsage();
   return (days[dateKey()] || 0) >= limitMinutes * 60;
 }
 
@@ -70,5 +70,5 @@ const timer = setInterval(tick, HEARTBEAT_MS);
 tick();
 // React straight away when the limit is hit or the settings change.
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "local" && ("days" in changes || "settings" in changes)) updateBlock().catch(() => {});
+  if (area === "sync" || (area === "local" && "days" in changes)) updateBlock().catch(() => {});
 });
