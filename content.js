@@ -1,6 +1,6 @@
 // Runs on YouTube pages (after common.js). Every few seconds, tells the
 // background worker the page is being watched, but only while the tab is
-// actually visible. Once the daily limit is reached and blocking is on, it
+// actually visible or its video is playing in picture-in-picture. Once the daily limit is reached and blocking is on, it
 // covers the page and pauses playback instead.
 const HEARTBEAT_MS = 5000;
 const OVERLAY_ID = "ytt-limit-overlay";
@@ -8,6 +8,20 @@ const OVERLAY_ID = "ytt-limit-overlay";
 function isVideoPlaying() {
   const video = document.querySelector("video");
   return !!video && !video.paused && !video.ended;
+}
+
+// A video popped out into a picture-in-picture window stays on screen while
+// you use other tabs. Covers the browser's own PiP (which PiP extensions
+// use) and the newer Document PiP window.
+function isPictureInPicturePlaying() {
+  const pip = document.pictureInPictureElement;
+  if (pip) return !pip.paused && !pip.ended;
+  const pipWindow = window.documentPictureInPicture?.window;
+  if (pipWindow) {
+    const video = pipWindow.document.querySelector("video") || document.querySelector("video");
+    return !!video && !video.paused && !video.ended;
+  }
+  return false;
 }
 
 async function isBlocked() {
@@ -58,7 +72,7 @@ async function tick() {
   try {
     // Time spent looking at the block screen doesn't count.
     if (await updateBlock()) return;
-    if (document.visibilityState !== "visible") return;
+    if (document.visibilityState !== "visible" && !isPictureInPicturePlaying()) return;
     await chrome.runtime.sendMessage({ type: "heartbeat", playing: isVideoPlaying() });
   } catch {
     // Extension was reloaded or updated; this old content script is orphaned.

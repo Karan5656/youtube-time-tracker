@@ -32,7 +32,7 @@ the limit.
 
 ## What counts as time on YouTube
 
-- A YouTube tab counts only while it is visible (the active tab of a window that isn't minimized).
+- A YouTube tab counts while it is visible (the active tab of a window that isn't minimized), or while its video is playing in a picture-in-picture window, even if you've switched to another tab.
 - If you've been away from the keyboard for 2 minutes, time stops counting, unless a video is playing.
 - Two YouTube windows open side by side count as wall-clock time, not double.
 
