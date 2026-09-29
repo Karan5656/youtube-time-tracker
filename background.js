@@ -26,39 +26,41 @@ async function addTime(seconds) {
   const usage = await getUsage();
   const after = usage.days[key] || 0;
   const before = after - seconds;
-  const { limitMinutes } = await getSettings();
+  const { limitMinutes, reminderMinutes } = await getSettings();
   const limit = limitMinutes * 60;
   updateBadge(after, limit);
 
   if (limit > 0 && before < limit && after >= limit) {
     notifyLimit(limitMinutes);
-    return; // don't stack an hourly reminder on top of this one
+    return; // don't stack a reminder on top of this one
   }
-  const hours = Math.floor(after / 3600);
-  if (hours > Math.floor(before / 3600)) notifyHour(hours);
+  const interval = reminderMinutes * 60;
+  if (interval > 0 && Math.floor(after / interval) > Math.floor(before / interval)) {
+    notifyReminder(Math.floor(after / interval) * interval);
+  }
+}
+
+function notify(id, title, message) {
+  chrome.notifications.create(id, {
+    type: "basic",
+    iconUrl: "icons/icon128.png",
+    title,
+    message,
+    priority: 2,
+    requireInteraction: true,
+  });
 }
 
 function notifyLimit(limitMinutes) {
-  chrome.notifications.create(`limit-${dateKey()}`, {
-    type: "basic",
-    iconUrl: "icons/icon128.png",
-    title: "Daily YouTube limit reached",
-    message: `You've hit your limit of ${formatDuration(limitMinutes * 60)} for today.`,
-    priority: 2,
-    requireInteraction: true,
-  });
+  notify(`limit-${dateKey()}`, "Daily YouTube limit reached",
+    `You've hit your limit of ${formatDuration(limitMinutes * 60)} for today.`);
 }
 
-// Shown each time today's YouTube time crosses another full hour.
-function notifyHour(hours) {
-  chrome.notifications.create(`hour-${dateKey()}-${hours}`, {
-    type: "basic",
-    iconUrl: "icons/icon128.png",
-    title: "Time for a break?",
-    message: `You've spent ${hours} hour${hours === 1 ? "" : "s"} on YouTube today.`,
-    priority: 2,
-    requireInteraction: true,
-  });
+// Shown each time today's YouTube time passes another reminder interval
+// (every hour by default).
+function notifyReminder(seconds) {
+  notify(`reminder-${dateKey()}-${seconds}`, "Time for a break?",
+    `You've spent ${formatDuration(seconds)} on YouTube today.`);
 }
 
 // Grey while under the daily limit, red once it's reached (or always red
@@ -93,6 +95,11 @@ async function handleHeartbeat(playing) {
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg && msg.type === "heartbeat") {
     queue = queue.then(() => handleHeartbeat(!!msg.playing)).catch(console.error);
+  }
+  // "Send a test" button in the popup's settings.
+  if (msg && msg.type === "test-notification") {
+    notify(`test-${Date.now()}`, "Notifications are working",
+      "This is how your YouTube reminders will look.");
   }
 });
 

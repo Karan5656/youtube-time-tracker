@@ -2,22 +2,30 @@
 
 A Chrome extension (Manifest V3) that tracks how much time you spend on YouTube.
 
-The toolbar badge shows today's time, and the popup shows today, your all-time
-total, and a bar chart of the last 7 days.
+The toolbar badge shows today's time. The popup shows today's time against
+your daily limit, this week's total and daily average, your all-time total,
+and a chart of the last 7 days. The gear icon opens the settings.
 
-Every time today's YouTube time passes another full hour (1h, 2h, 3h, ...), a
-desktop notification pops up. It stays on screen until you dismiss it. If you
-don't see it, check that notifications for Chrome are allowed in your
-operating system's settings.
+## Break reminders
+
+A desktop notification pops up each time today's YouTube time passes another
+reminder interval: every hour by default, or every 15, 30 or 45 minutes, 1.5 or
+2 hours, or never, as set under **Settings > Break reminders**. It stays on
+screen until you dismiss it.
+
+If reminders never show up, press **Send a test** in the same section. If the
+test doesn't appear either, allow notifications for Google Chrome in your
+computer's system settings (on a Mac: System Settings > Notifications > Google
+Chrome), and check that Do Not Disturb or Focus is off.
 
 ## Daily limit
 
-Pick a daily limit in the popup (15 minutes to 5 hours, or Off; the default is
+Pick a daily limit under **Settings** (15 minutes to 5 hours, or Off; the default is
 2 hours). The popup shows how much time you have left, and the toolbar badge
 is grey while you're under the limit and turns red once you reach it. You also
 get a notification when you hit it.
 
-Tick **Block YouTube when I reach it** to cover every YouTube tab with a
+Turn on **Block YouTube at the limit** to cover every YouTube tab with a
 "Daily YouTube limit reached" screen and pause the video for the rest of the
 day. It lifts automatically at midnight, or as soon as you raise or turn off
 the limit.
@@ -45,7 +53,7 @@ your Chrome account (not your YouTube or Google login inside the page):
   time from every device.
 - The limit and the block setting are shared, so changing them on one device
   changes them everywhere.
-- **Reset** erases the time on all your devices.
+- **Erase** (under Settings > Data) erases the time on all your devices.
 
 Each device sends its time about once a minute, so another device's latest
 minute may not show up straight away. If Chrome sync is off, everything still

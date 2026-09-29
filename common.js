@@ -6,7 +6,7 @@
 //   chrome.storage.sync   dev_<deviceId>: { d, older, since, pushedAt }
 //                           each device's recent days (last SYNC_DAYS), with
 //                           anything older rolled up into `older`
-//                         settings: { limitMinutes, blockWhenOver }
+//                         settings: { limitMinutes, blockWhenOver, reminderMinutes }
 //                         resetAt: when Reset was last pressed on any device
 //
 // Every device only ever writes its own dev_ item, so devices never
@@ -16,6 +16,7 @@
 const DEFAULT_SETTINGS = {
   limitMinutes: 120, // daily limit; 0 turns it off
   blockWhenOver: false, // cover YouTube once the limit is reached
+  reminderMinutes: 60, // break reminder every N minutes of watching; 0 turns it off
 };
 
 const DEVICE_PREFIX = "dev_";

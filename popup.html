@@ -5,58 +5,101 @@
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <header>
-    <img src="icons/icon32.png" alt="" width="20" height="20">
-    <h1>YouTube Time Tracker</h1>
-  </header>
+  <!-- Main view -->
+  <main id="main-view">
+    <header>
+      <img src="icons/icon32.png" alt="" width="22" height="22">
+      <h1>YouTube Time Tracker</h1>
+      <button class="icon-btn" id="open-settings" type="button" title="Settings" aria-label="Settings">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M19.14 12.94a7.07 7.07 0 0 0 0-1.88l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.07 7.07 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.61.22l2.39-.96c.49.38 1.03.7 1.62.94l.36 2.54c.05.24.25.42.49.42h3.84c.25 0 .45-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.48 0 .61-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z"/></svg>
+      </button>
+    </header>
 
-  <section class="stats">
-    <div class="stat">
-      <span class="label">Today</span>
-      <span class="value" id="today">0m</span>
-    </div>
-    <div class="stat">
-      <span class="label">Total</span>
-      <span class="value" id="total">0m</span>
-    </div>
-  </section>
+    <section class="card hero">
+      <div class="hero-top">
+        <span class="label">Today</span>
+        <span class="pill" id="limit-pill"></span>
+      </div>
+      <div class="hero-value" id="today">0m</div>
+      <div class="progress" id="limit-bar"><div id="limit-fill"></div></div>
+      <div class="hero-sub" id="hero-sub"></div>
+    </section>
 
-  <section>
-    <h2>Daily limit</h2>
-    <div class="limit-progress" id="limit-progress">
-      <div class="bar"><div id="limit-fill"></div></div>
-      <span id="limit-text"></span>
-    </div>
-    <div class="limit-form">
-      <label for="limit">Limit per day</label>
-      <select id="limit">
-        <option value="0">Off</option>
-        <option value="15">15 min</option>
-        <option value="30">30 min</option>
-        <option value="45">45 min</option>
-        <option value="60">1 hour</option>
-        <option value="90">1.5 hours</option>
-        <option value="120">2 hours</option>
-        <option value="180">3 hours</option>
-        <option value="240">4 hours</option>
-        <option value="300">5 hours</option>
-      </select>
-    </div>
-    <label class="check">
-      <input type="checkbox" id="block">
-      Block YouTube when I reach it
-    </label>
-  </section>
+    <section class="tiles">
+      <div class="card tile"><span class="label">This week</span><span class="tile-value" id="week-total">0m</span></div>
+      <div class="card tile"><span class="label">Daily avg</span><span class="tile-value" id="week-avg">0m</span></div>
+      <div class="card tile"><span class="label">All time</span><span class="tile-value" id="total">0m</span></div>
+    </section>
 
-  <section>
-    <h2>Last 7 days</h2>
-    <div id="week" class="week"></div>
-  </section>
+    <section class="card">
+      <h2>Last 7 days</h2>
+      <div class="chart" id="chart"></div>
+    </section>
 
-  <footer>
-    <span id="since"></span>
-    <button id="reset" type="button">Reset</button>
-  </footer>
+    <footer id="since"></footer>
+  </main>
+
+  <!-- Settings view -->
+  <main id="settings-view" hidden>
+    <header>
+      <button class="icon-btn" id="close-settings" type="button" title="Back" aria-label="Back">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M15.4 7.4 14 6l-6 6 6 6 1.4-1.4L10.8 12z"/></svg>
+      </button>
+      <h1>Settings</h1>
+    </header>
+
+    <h3>Daily limit</h3>
+    <section class="card group">
+      <div class="setting">
+        <label for="limit">Limit per day</label>
+        <select id="limit">
+          <option value="0">Off</option>
+          <option value="15">15 min</option>
+          <option value="30">30 min</option>
+          <option value="45">45 min</option>
+          <option value="60">1 hour</option>
+          <option value="90">1.5 hours</option>
+          <option value="120">2 hours</option>
+          <option value="180">3 hours</option>
+          <option value="240">4 hours</option>
+          <option value="300">5 hours</option>
+        </select>
+      </div>
+      <div class="setting" id="block-row">
+        <label for="block">Block YouTube at the limit</label>
+        <input type="checkbox" class="switch" id="block">
+      </div>
+    </section>
+
+    <h3>Break reminders</h3>
+    <section class="card group">
+      <div class="setting">
+        <label for="reminder">Remind me every</label>
+        <select id="reminder">
+          <option value="0">Off</option>
+          <option value="15">15 min</option>
+          <option value="30">30 min</option>
+          <option value="45">45 min</option>
+          <option value="60">1 hour</option>
+          <option value="90">1.5 hours</option>
+          <option value="120">2 hours</option>
+        </select>
+      </div>
+      <div class="setting">
+        <label for="test-notification">Check notifications</label>
+        <button id="test-notification" type="button">Send a test</button>
+      </div>
+      <p class="hint" id="notify-hint">No test notification? Allow notifications for Google Chrome in your computer's system settings, and check that Do Not Disturb or Focus is off.</p>
+    </section>
+
+    <h3>Data</h3>
+    <section class="card group">
+      <div class="setting">
+        <label for="reset">Erase all tracked time<small>On all your synced devices</small></label>
+        <button id="reset" class="danger" type="button">Erase</button>
+      </div>
+    </section>
+  </main>
 
   <script src="common.js"></script>
   <script src="popup.js"></script>
