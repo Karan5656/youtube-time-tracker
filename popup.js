@@ -139,4 +139,5 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "sync" || (area === "local" && "days" in changes)) render();
 });
 
+$("version").textContent = `Version ${chrome.runtime.getManifest().version}`;
 render();

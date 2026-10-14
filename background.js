@@ -40,6 +40,10 @@ async function addTime(seconds) {
   }
 }
 
+// Two channels, because the system notification alone is easy to miss: the
+// OS can hide it (macOS notification settings, Focus / Do Not Disturb), and
+// nothing tells us. So every alert also goes to storage, where the content
+// script picks it up and shows it as a pop-up on the YouTube page itself.
 function notify(id, title, message) {
   chrome.notifications.create(id, {
     type: "basic",
@@ -49,6 +53,7 @@ function notify(id, title, message) {
     priority: 2,
     requireInteraction: true,
   });
+  chrome.storage.local.set({ alert: { id, title, message, at: Date.now() } });
 }
 
 function notifyLimit(limitMinutes) {

@@ -8,13 +8,18 @@ and a chart of the last 7 days. The gear icon opens the settings.
 
 ## Break reminders
 
-A desktop notification pops up each time today's YouTube time passes another
-reminder interval: every hour by default, or every 15, 30 or 45 minutes, 1.5 or
-2 hours, or never, as set under **Settings > Break reminders**. It stays on
-screen until you dismiss it.
+A reminder pops up each time today's YouTube time passes another reminder
+interval: every hour by default, or every 15, 30 or 45 minutes, 1.5 or
+2 hours, or never, as set under **Settings > Break reminders**. It appears in
+two places:
 
-If reminders never show up, press **Send a test** in the same section. If the
-test doesn't appear either, allow notifications for Google Chrome in your
+- **On the YouTube page itself**, in the top-right corner (also in fullscreen).
+  It stays until you press OK, which closes it in every YouTube tab. A tab that
+  was in the background shows it when you switch back to it.
+- **As a desktop notification**, if your computer allows them.
+
+If desktop notifications never show up, press **Send a test** in the same
+section. If the test doesn't appear either, allow notifications for Google Chrome in your
 computer's system settings (on a Mac: System Settings > Notifications > Google
 Chrome), and check that Do Not Disturb or Focus is off.
 
