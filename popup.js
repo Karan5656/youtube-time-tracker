@@ -116,17 +116,10 @@ $("limit").addEventListener("change", (e) => saveSettings({ limitMinutes: Number
 $("block").addEventListener("change", (e) => saveSettings({ blockWhenOver: e.target.checked }));
 $("reminder").addEventListener("change", (e) => saveSettings({ reminderMinutes: Number(e.target.value) }));
 
-$("test-notification").addEventListener("click", async () => {
-  const level = await chrome.notifications.getPermissionLevel();
-  const hint = $("notify-hint");
-  if (level !== "granted") {
-    hint.classList.add("warn");
-    hint.textContent = "Chrome is blocking notifications from this extension. Remove and re-add it in chrome://extensions to allow them.";
-    return;
-  }
-  chrome.runtime.sendMessage({ type: "test-notification" });
-  $("test-notification").textContent = "Sent";
-  setTimeout(() => ($("test-notification").textContent = "Send a test"), 2000);
+$("preview-break").addEventListener("click", () => {
+  chrome.runtime.sendMessage({ type: "preview-break" });
+  $("preview-break").textContent = "Shown";
+  setTimeout(() => ($("preview-break").textContent = "Preview"), 2000);
 });
 
 $("reset").addEventListener("click", async () => {

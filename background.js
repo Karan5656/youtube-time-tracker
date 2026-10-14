@@ -40,10 +40,11 @@ async function addTime(seconds) {
   }
 }
 
-// Two channels, because the system notification alone is easy to miss: the
-// OS can hide it (macOS notification settings, Focus / Do Not Disturb), and
-// nothing tells us. So every alert also goes to storage, where the content
-// script picks it up and shows it as a pop-up on the YouTube page itself.
+// Used for the daily-limit alert. Two channels, because the system
+// notification alone is easy to miss: the OS can hide it (macOS notification
+// settings, Focus / Do Not Disturb), and nothing tells us. So the alert also
+// goes to storage, where the content script shows it as a pop-up on the
+// YouTube page itself.
 function notify(id, title, message) {
   chrome.notifications.create(id, {
     type: "basic",
@@ -53,7 +54,7 @@ function notify(id, title, message) {
     priority: 2,
     requireInteraction: true,
   });
-  chrome.storage.local.set({ alert: { id, title, message, at: Date.now() } });
+  chrome.storage.local.set({ alert: { id, kind: "popup", title, message, at: Date.now() } });
 }
 
 function notifyLimit(limitMinutes) {
@@ -61,10 +62,34 @@ function notifyLimit(limitMinutes) {
     `You've hit your limit of ${formatDuration(limitMinutes * 60)} for today.`);
 }
 
+const QUOTES = [
+  ["The key is not to prioritize what's on your schedule, but to schedule your priorities.", "Stephen Covey"],
+  ["Lost time is never found again.", "Benjamin Franklin"],
+  ["Time is what we want most, but what we use worst.", "William Penn"],
+  ["Until we can manage time, we can manage nothing else.", "Peter Drucker"],
+  ["Either you run the day or the day runs you.", "Jim Rohn"],
+  ["The bad news is time flies. The good news is you're the pilot.", "Michael Altshuler"],
+  ["How we spend our days is, of course, how we spend our lives.", "Annie Dillard"],
+  ["Don't watch the clock; do what it does. Keep going.", "Sam Levenson"],
+  ["You will never find time for anything. If you want time you must make it.", "Charles Buxton"],
+  ["It is not that we have a short time to live, but that we waste a lot of it.", "Seneca"],
+  ["Time is the most valuable thing a man can spend.", "Theophrastus"],
+];
+
+// Break reminders don't use desktop notifications: they cover the YouTube
+// page with a full-screen break screen (drawn by content.js) showing a
+// time-management quote, until OK is pressed.
+function showBreakScreen(id, message) {
+  const [quote, author] = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+  chrome.storage.local.set({
+    alert: { id, kind: "break", title: "Time for a break", message, quote, author, at: Date.now() },
+  });
+}
+
 // Shown each time today's YouTube time passes another reminder interval
 // (every hour by default).
 function notifyReminder(seconds) {
-  notify(`reminder-${dateKey()}-${seconds}`, "Time for a break?",
+  showBreakScreen(`reminder-${dateKey()}-${seconds}`,
     `You've spent ${formatDuration(seconds)} on YouTube today.`);
 }
 
@@ -101,10 +126,9 @@ chrome.runtime.onMessage.addListener((msg) => {
   if (msg && msg.type === "heartbeat") {
     queue = queue.then(() => handleHeartbeat(!!msg.playing)).catch(console.error);
   }
-  // "Send a test" button in the popup's settings.
-  if (msg && msg.type === "test-notification") {
-    notify(`test-${Date.now()}`, "Notifications are working",
-      "This is how your YouTube reminders will look.");
+  // "Preview" button in the popup's settings.
+  if (msg && msg.type === "preview-break") {
+    showBreakScreen(`preview-${Date.now()}`, "This is a preview of your break screen.");
   }
 });
 

@@ -8,20 +8,15 @@ and a chart of the last 7 days. The gear icon opens the settings.
 
 ## Break reminders
 
-A reminder pops up each time today's YouTube time passes another reminder
-interval: every hour by default, or every 15, 30 or 45 minutes, 1.5 or
-2 hours, or never, as set under **Settings > Break reminders**. It appears in
-two places:
+Each time today's YouTube time passes another reminder interval (every hour by
+default, or every 15, 30 or 45 minutes, 1.5 or 2 hours, or never, as set under
+**Settings > Break reminders**), a break screen covers every open YouTube tab.
+It shows a time-management quote, pauses the video, and stays until you press
+**OK**, which closes it in all tabs. Time spent on the break screen isn't
+counted. **Preview** in the same section shows it on your open YouTube tabs.
 
-- **On the YouTube page itself**, in the top-right corner (also in fullscreen).
-  It stays until you press OK, which closes it in every YouTube tab. A tab that
-  was in the background shows it when you switch back to it.
-- **As a desktop notification**, if your computer allows them.
-
-If desktop notifications never show up, press **Send a test** in the same
-section. If the test doesn't appear either, allow notifications for Google Chrome in your
-computer's system settings (on a Mac: System Settings > Notifications > Google
-Chrome), and check that Do Not Disturb or Focus is off.
+Break reminders don't use desktop notifications. Reaching the daily limit
+still sends one, along with a pop-up on the YouTube page.
 
 ## Daily limit
 
